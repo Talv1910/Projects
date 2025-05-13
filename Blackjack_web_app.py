@@ -46,6 +46,7 @@ if "user_cards" not in st.session_state:
     st.session_state.computer_cards = []
     st.session_state.game_over = False
     st.session_state.show_result = False
+    st.session_state.hit = False
 
 st.title("🃏 Blackjack")
 st.text(logo)
@@ -56,6 +57,7 @@ if st.button("🔁 Start New Game"):
     st.session_state.computer_cards = [deal_card(), deal_card()]
     st.session_state.game_over = False
     st.session_state.show_result = False
+    st.session_state.hit = False
 
 # Show current state
 if st.session_state.user_cards:
@@ -69,24 +71,29 @@ if st.session_state.user_cards:
         col1, col2 = st.columns(2)
         with col1:
             if st.button("🃏 Hit"):
-                st.session_state.user_cards.append(deal_card())
-                if calculate_score(st.session_state.user_cards) > 21:
-                    st.session_state.game_over = True
-                    st.session_state.show_result = True
+                st.session_state.hit = True
         with col2:
             if st.button("✋ Stand"):
                 st.session_state.game_over = True
                 st.session_state.show_result = True
 
-    # If game is over, let computer play
-    if st.session_state.game_over and st.session_state.show_result:
-        while calculate_score(st.session_state.computer_cards) != 0 and calculate_score(st.session_state.computer_cards) < 17:
-            st.session_state.computer_cards.append(deal_card())
+    # Process "Hit" action
+    if st.session_state.hit:
+        st.session_state.user_cards.append(deal_card())
+        st.session_state.hit = False
+        if calculate_score(st.session_state.user_cards) > 21:
+            st.session_state.game_over = True
+            st.session_state.show_result = True
 
-        user_score = calculate_score(st.session_state.user_cards)
-        computer_score = calculate_score(st.session_state.computer_cards)
+# After game ends
+if st.session_state.game_over and st.session_state.show_result:
+    while calculate_score(st.session_state.computer_cards) != 0 and calculate_score(st.session_state.computer_cards) < 17:
+        st.session_state.computer_cards.append(deal_card())
 
-        st.write("---")
-        st.write(f"**Your final hand:** {st.session_state.user_cards} | Score: {user_score}")
-        st.write(f"**Computer's final hand:** {st.session_state.computer_cards} | Score: {computer_score}")
-        st.success(final_score(user_score, computer_score))
+    user_score = calculate_score(st.session_state.user_cards)
+    computer_score = calculate_score(st.session_state.computer_cards)
+
+    st.write("---")
+    st.write(f"**Your final hand:** {st.session_state.user_cards} | Score: {user_score}")
+    st.write(f"**Computer's final hand:** {st.session_state.computer_cards} | Score: {computer_score}")
+    st.success(final_score(user_score, computer_score))
